@@ -44,6 +44,10 @@ def prune_rare_cats(df):
     
     return new_df
 
+def add_popularity(df):
+    """Make a popularity column based on average rating multiplied by number of reviews"""
+    df['popularity'] = df['rating'] * df['review_count']
+
 def separate_coords(df):
     """Change list of categories into a string."""
     return df['coordinates'].apply(lambda x: x['latitude']), df['coordinates'].apply(lambda x: x['longitude'])

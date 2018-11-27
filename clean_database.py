@@ -1,5 +1,5 @@
 import pandas as pd
-
+from collections import Counter
 
 
 def clean_cats(categories):
@@ -15,15 +15,23 @@ def cat_counts(categories):
             cat_dict[cat] += 1
     return cat_dict
 
+#get category dict with:  cat_counts = cat_counts(mile_from_galvanize_copy['cats'])
 
 def load_categories():
     with open('categories.csv') as f:
         categories = [cat.strip() for cat in f.readlines()]
     return categories
 
-categories = load_categories()
+#categories = load_categories()
 
-
+def get_category_dummies(categories_col, categories=categories):
+    """Return a DataFrame of dummy columns for the categories specified."""
+    cat_list_col = categories_col.str.split(',')
+    df = pd.DataFrame(index=categories_col.index)
+    for cat in categories:
+        df['category_' + cat] = cat_list_col.apply(lambda cats: cat in cats).astype(int)
+    
+    return df
 
 def separate_coords(df):
     """Change list of categories into a string."""

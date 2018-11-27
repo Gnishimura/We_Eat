@@ -35,10 +35,13 @@ def get_category_dummies(categories_col, categories=categories):
 
 def prune_rare_cats(df):
     """Remove any categories that have less than 5 restaurants"""
+
     new_df = df.copy()
-    for column in df:
-        if df[column].sum() < 5:
-            new_df.drop(columns=column, inplace=True)
+    categories = []
+    [categories.append(item) for item in list(df.columns) if 'category_' in item]       
+   
+    [new_df.drop(columns=category, inplace=True) for category in categories if df[category].sum() < 5]
+    
     return new_df
 
 def separate_coords(df):

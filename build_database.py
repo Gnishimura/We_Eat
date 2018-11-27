@@ -5,11 +5,11 @@ from pymongo import MongoClient
 import time
 
 # client = MongoClient()
-mc = MongoClient()
+we_eat_client = MongoClient()
 
 # create Mongo database and collection
-db = mc['we_eat']
-rc = db['restaurants']
+we_eat_db = mc['we_eat']
+restaurant_collection = we_eat_db['restaurants']
 
 #for starting_point in offsets:
 default_params = {
@@ -57,9 +57,9 @@ def build_database(start=1, end=1001, location=None):
         time.sleep(1)
 
 def add_to_database_if_new(row):
-    if rc.count_documents({'id': row['id']}) == 0:
-        rc.insert_one(row)
+    if restaurant_collection.count_documents({'id': row['id']}) == 0:
+        restaurant_collection.insert_one(row)
 
 def retrieve_database():
     """Return the contents of MongoDB as a dataframe."""
-    return pd.DataFrame(list(rc.find({})))
+    return pd.DataFrame(list(restaurant_collection.find({})))

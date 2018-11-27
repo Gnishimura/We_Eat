@@ -1,8 +1,29 @@
 import pandas as pd
 
+
+
 def clean_cats(categories):
     """Change list of categories into a string."""
     return ','.join(cat['alias'] for cat in categories)
+
+def cat_counts(categories):
+    """Create a dictionary with a list of all the categories in the 'cats' feature and their counts"""
+    cat_dict = Counter()
+    for row in categories:
+        temp = row.split(',')
+        for cat in temp:
+            cat_dict[cat] += 1
+    return cat_dict
+
+
+def load_categories():
+    with open('categories.csv') as f:
+        categories = [cat.strip() for cat in f.readlines()]
+    return categories
+
+categories = load_categories()
+
+
 
 def separate_coords(df):
     """Change list of categories into a string."""
@@ -18,7 +39,7 @@ def dummify_price(df):
     df['$$'] = (df['price']=='$$')*1
     df['$$$'] = (df['price']=='$$$')*1
     df['$$$$'] = (df['price']=='$$$$')*1
-
+ 
 def drop_unnecessaries(df):
     """Remove any permanently closed restaurants, and remove unused columns"""
     df_copy = df.copy()

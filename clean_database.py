@@ -22,7 +22,7 @@ def load_categories():
         categories = [cat.strip() for cat in f.readlines()]
     return categories
 
-#categories = load_categories()
+categories = load_categories()
 
 def get_category_dummies(categories_col, categories=categories):
     """Return a DataFrame of dummy columns for the categories specified."""
@@ -32,6 +32,14 @@ def get_category_dummies(categories_col, categories=categories):
         df['category_' + cat] = cat_list_col.apply(lambda cats: cat in cats).astype(int)
     
     return df
+
+def prune_rare_cats(df):
+    """Remove any categories that have less than 5 restaurants"""
+    new_df = df.copy()
+    for column in df:
+        if df[column].sum() < 5:
+            new_df.drop(columns=column, inplace=True)
+    return new_df
 
 def separate_coords(df):
     """Change list of categories into a string."""

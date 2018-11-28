@@ -13,20 +13,20 @@ def add_clean_cats(df):
 
 
 def cat_counts(df):
-    """Create a dictionary with a list of all the categories in the 'cats' feature and their counts, sorted"""
+    """Create a dictionary with a list of all the categories in the 'cats' feature and their counts"""
     cat_series = df['cats']
     cat_dict = Counter()
-    for row in categories:
+    for row in cat_series:
         temp = row.split(',')
         for cat in temp:
             cat_dict[cat] += 1
-    return cat_dict.most_common()
+    return cat_dict
 
 #get category dict with:  cat_counts = cat_counts(mile_from_galvanize_copy['cats'])
 
 def make_cats_csv(df):
     """Saves a file called 'categories.csv' to the working directory"""
-    unique_cats = list(cat_counts(df).keys)
+    unique_cats = list(cat_counts(df).keys())
     unique_cats_series = pd.Series(unique_cats)
     unique_cats_series.to_csv('categories.csv', index=False)
 
@@ -85,7 +85,7 @@ def drop_unnecessaries(df):
     """Remove any permanently closed restaurants, and remove unused columns"""
     df_copy = df.copy()
     df_pruned = df_copy[df_copy['is_closed']==False]
-    df_pruned.drop(columns=['_id', 'categories', 'coordinates', 'display_phone', 'is_closed', 'phone', 'price', 'name', 'display_phone'], inplace=True)
+    df_pruned.drop(columns=['_id', 'categories', 'coordinates', 'display_phone', 'is_closed', 'phone', 'price', 'name', 'display_phone', 'distance', 'lats', 'longs'], inplace=True)
     return df_pruned
 
 def add_distance_from_galvanize(df):

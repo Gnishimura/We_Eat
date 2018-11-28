@@ -11,13 +11,13 @@ we_eat_client = MongoClient()
 we_eat_db = we_eat_client['we_eat']
 restaurant_collection = we_eat_db['restaurants']
 
-#for starting_point in offsets:
 default_params = {
     'term': 'restaurant',
     'latitude': 47.5990148,
     'longitude': -122.3338371,
     'limit': 50,
-    'radius': 1609
+    'radius': 1609,
+    'categories': 'japanese'   
     }
 
 def load_api_key(filename='/Users/gnishimura/.secrets/yelp_api_key.yaml'):
@@ -38,8 +38,8 @@ def make_request(params, api_key):
 
     return data.get('businesses', None)
 
-def build_database(start=1, end=1001, location=None):
-    params = default_params.copy()
+def build_database(start=0, end=1000, location=None):
+    params = default_params
     if location:
         params['location'] = location
     offsets = range(start, end, 50)
@@ -65,5 +65,5 @@ def retrieve_database():
     return pd.DataFrame(list(restaurant_collection.find({})))
 
 
-rest_db = build_database()
-mile_from_galvanize = retrieve_database()
+# rest_db = build_database()
+# mile_from_galvanize = retrieve_database()

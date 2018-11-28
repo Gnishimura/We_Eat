@@ -6,6 +6,9 @@ def clean_cats(categories):
     """Change list of categories into a string."""
     return ','.join(cat['alias'] for cat in categories)
 
+def add_clean_cats(df):
+    df['cats'] = df['categories'].apply(clean_cats)
+
 def cat_counts(categories):
     """Create a dictionary with a list of all the categories in the 'cats' feature and their counts"""
     cat_dict = Counter()
@@ -18,6 +21,7 @@ def cat_counts(categories):
 #get category dict with:  cat_counts = cat_counts(mile_from_galvanize_copy['cats'])
 
 def load_categories():
+    """Loads a csv containing all the unique categories for restaurants in the database"""
     with open('categories.csv') as f:
         categories = [cat.strip() for cat in f.readlines()]
     return categories
@@ -48,9 +52,9 @@ def add_popularity(df):
     """Make a popularity column based on average rating multiplied by number of reviews"""
     df['popularity'] = df['rating'] * df['review_count']
 
-def separate_coords(df):
-    """Change list of categories into a string."""
-    return df['coordinates'].apply(lambda x: x['latitude']), df['coordinates'].apply(lambda x: x['longitude'])
+def add_lat_long(df):
+    """Separate the coordinates into 'lats' and 'longs'."""
+    return df['coordinates'].apply(lambda x: x['lats']), df['coordinates'].apply(lambda x: x['longs'])
 
 def change_price_nulls(df):
     """Change all nulls to the mode of the price data, $$"""
@@ -69,6 +73,14 @@ def drop_unnecessaries(df):
     df_pruned = df_copy[df_copy['is_closed']==False]
     df_pruned.drop(columns=['_id', 'categories', 'coordinates', 'display_phone', 'is_closed', 'phone', 'price', 'name', 'display_phone'], inplace=True)
     return df_pruned
+
+def add_distance_from_galvanize_feature(df):
+    """Calculates the distance from Galvanize to the restaurant in miles and 
+    makes that a new column in the df"""
+    
+    galvanize_coords = (47.5990148, -122.3338371)
+    df['dist_from_galvanize'] = [geopy.distance.distance((df['lats'][i],df['longs'][i]), galvanize_coords).miles
+                                 for i in range(len(full_restaurant_df))]
 
 # #Clean categories
 # mile_from_galvanize['cats'] = mile_from_galvanize['categories'].apply(clean_cats)

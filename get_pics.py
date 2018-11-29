@@ -14,9 +14,11 @@ def display_pics(restaurants_list, df):
     urls, names = get_urls(restaurants_list, df)
     restaurant_names = dict(zip(names, urls))
     for key, value in restaurant_names.items():
-        print(key)
+        print(key, value)
         display(Image(url=value, width=200, height=200))
 
+#Later gotta make this so that if one restaurant is most popular in multiple categories
+#it chooses the next most popular (in order to get all unique restaurants)
 def find_most_popular(df, categories):
     most_popular = []
     for category in categories:

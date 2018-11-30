@@ -21,7 +21,7 @@ def update_user_ratings(user, user_matrix, restaurant_matrix, user_ratings_dict)
     standardized_rats = standardize_ratings(average_rats)
     user_matrix.loc[user] = standardized_rats
 
-def find_top_recs(user, ratings_matrix, popularity_scores, n=None):
+def find_individual_recs(user, ratings_matrix, popularity_scores, n=None):
     """Input user alias, number of recs, ratings matrix, and popularity series.  Output a sorted series"""
     if n:
         n == n
@@ -30,4 +30,11 @@ def find_top_recs(user, ratings_matrix, popularity_scores, n=None):
     return weighted.sort_values(ascending=False)[:n]
 
 
+def produce_recs(user1, user2, n):
     
+    u1 = find_top_recs(user1, R, popularity)
+    u2 = find_top_recs(user2, R, popularity)
+    
+    recs_df = pd.concat([u1, u2], axis=1)
+    recs_df['mean'] = recs_df.mean(axis=1)
+    return recs_df.sort_values(by=['mean'], ascending=False)[:5]

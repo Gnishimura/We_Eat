@@ -38,14 +38,16 @@ def load_categories():
 
 categories = load_categories()
 
-def get_category_dummies(categories_col, categories=categories):
+def get_category_dummies(df, categories=categories):
     """Return a DataFrame of dummy columns for the categories specified."""
-    cat_list_col = categories_col.str.split(',')
-    df = pd.DataFrame(index=categories_col.index)
+    cat_list_col = df['cats'].str.split(',')
+    dummied = pd.DataFrame(index=df['cats'].index)
     for cat in categories:
-        df['category_' + cat] = cat_list_col.apply(lambda cats: cat in cats).astype(int)
+        dummied['category_' + cat] = cat_list_col.apply(lambda cats: cat in cats).astype(int)
     
-    return df
+    dummied_df = pd.concat([df, dummied], axis=1)
+
+    return dummied_df
 
 def prune_rare_cats(df):
     """Remove any categories that have less than 5 restaurants"""
@@ -70,7 +72,7 @@ def add_lat_longs(df):
     """Creates the new features 'lats' and 'longs'"""
     df['lats'], df['longs'] = separate_coords(df)
 
-def change_price_nulls(df):
+def impute_price(df):
     """Change all nulls to the mode of the price data, $$"""
     return df['price'].fillna(value='$$', inplace=True)
 
@@ -82,7 +84,7 @@ def dummify_price(df):
     df['$$$$'] = (df['price']=='$$$$')*1
  
 def drop_unnecessaries(df):
-    """Remove any permanently closed restaurants, and remove unused columns"""
+    """Remove any permanently closed restaurants, and remove unwanted columns"""
     df_copy = df.copy()
     df_pruned = df_copy[df_copy['is_closed']==False]
     df_pruned.drop(columns=['_id', 'categories', 'coordinates', 'display_phone', 'is_closed', 'phone', 'price', 'name', 'display_phone', 'distance', 'lats', 'longs'], inplace=True)
@@ -96,18 +98,18 @@ def add_distance_from_galvanize(df):
     df['dist_from_galvanize'] = [geopy.distance.distance((df['lats'][i],df['longs'][i]), galvanize_coords).miles
                                  for i in range(len(df))]
 
-# #Clean categories
-# mile_from_galvanize['cats'] = mile_from_galvanize['categories'].apply(clean_cats)
+def clean_it_all(df):
+    """Takes in a pandas dataframe and applies all the necessary functions to output a cleaned dataframe"""
+    add_clean_cats(df)
+    categories = load_categories()
+    df = get_category_dummies(df, categories=categories)
+    add_popularity(df)
+    add_lat_longs(df)
+    impute_price(df)
+    dummify_price(df)
+    add_distance_from_galvanize(df)
+    mile_from_g_df = df[df['dist_from_galvanize'] <= 1]
+    mile_from_g_df_pruned = drop_unnecessaries(mile_from_g_df)
+    return mile_from_g_df_pruned
 
-# #Separate coordinates into lats and longs
-# mile_from_galvanize['lats'], mile_from_galvanize['longs'] = clean_coords(mile_from_galvanize)
-
-# #Change nulls in price to $$
-# change_price_nulls(mile_from_galvanize)
-
-# #Dummify price
-# dummify_price(mile_from_galvanize)
-
-# #Drop unwanted rows and columns
-# drop_unneccessaries(mile_from_galvanize)
 

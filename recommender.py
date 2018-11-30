@@ -21,19 +21,24 @@ def update_user_ratings(user, user_matrix, restaurant_matrix, user_ratings_dict)
     standardized_rats = standardize_ratings(average_rats)
     user_matrix.loc[user] = standardized_rats
 
+
+popularity_weight_log = np.log(cleaned_df['popularity'] + 1)
+average_rating_weight = cleaned_df['rating']
+
+
 def find_individual_recs(user, ratings_matrix, popularity_scores, n=None):
     """Input user alias, number of recs, ratings matrix, and popularity series.  Output a sorted series"""
     if n:
         n == n
     unweighted_prefs = ratings_matrix.loc[user]
-    weighted = unweighted_prefs * np.log(popularity_scores + 1)
+    weighted = unweighted_prefs * np.log(popularity_scores + 1) * average_rating_weight
     return weighted.sort_values(ascending=False)[:n]
 
 
 def produce_recs(user1, user2, n):
     
-    u1 = find_top_recs(user1, R, popularity)
-    u2 = find_top_recs(user2, R, popularity)
+    u1 = find_individual_recs(user1, R, popularity)
+    u2 = find_individual_recs(user2, R, popularity)
     
     recs_df = pd.concat([u1, u2], axis=1)
     recs_df['mean'] = recs_df.mean(axis=1)

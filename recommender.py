@@ -40,9 +40,9 @@ class BuildUserMatrix():
             average_ratings = feature_rating_matrix.mean(axis=0)
             #average_ratings.replace(1.0, 0, inplace=True)
             #standardize
-            #standardized_rats = self.standardize_ratings(average_ratings)
+            standardized_rats = self.standardize_ratings(average_ratings)
             
-            user_matrix.loc[i, :] = average_ratings.values
+            user_matrix.loc[i, :] = standardized_rats.values
 
         return user_matrix.replace(np.NaN, 0)
 
@@ -65,8 +65,10 @@ class RestaurantRecommender():
         self.restaurant_matrix = restaurant_matrix
         
     def build_ratings_matrix(self):
-        return self.user_matrix.dot(self.restaurant_matrix.T) 
-        
+        ratings_matrix = self.user_matrix.dot(self.restaurant_matrix.T) 
+        self.ratings_matrix = (ratings_matrix / (self.restaurant_matrix.sum(axis=1)))
+        return self.ratings_matrix
+
     def find_individual_recs(self, user, ratings_matrix, n=None):
         """Input user alias, number of recs, ratings matrix, and popularity series.  Output a sorted series"""
         if n:
@@ -77,14 +79,17 @@ class RestaurantRecommender():
         return unweighted_prefs.sort_values(ascending=False)[:n]
 
 
-    def produce_recs(user1, user2, n):
+    def produce_group_recs(self, user1, user2, n=None):
         
-        u1 = find_individual_recs(user1, R, popularity)
-        u2 = find_individual_recs(user2, R, popularity)
+        u1 = self.find_individual_recs(user1, self.ratings_matrix)
+        u2 = self.find_individual_recs(user2, self.ratings_matrix)
         
         recs_df = pd.concat([u1, u2], axis=1)
         recs_df['mean'] = recs_df.mean(axis=1)
-        return recs_df.sort_values(by=['mean'], ascending=False)[:5]
+        return recs_df.sort_values(by=['mean'], ascending=False)[:n]
+
+
+
 
 def main(var1, var2):
     pass

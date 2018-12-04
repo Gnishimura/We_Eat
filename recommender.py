@@ -12,7 +12,8 @@ class RestaurantRecommender():
     def build_ratings_matrix(self):
         """Using the user and restaurant matrices, output a ratings matrix with users as rows and restaurants as columns"""
         ratings_matrix = self.user_matrix.dot(self.restaurant_matrix.T) 
-        self.ratings_matrix = (ratings_matrix / (self.restaurant_matrix.sum(axis=1)))
+        #divide by num of features that the row contains
+        self.ratings_matrix = (ratings_matrix / (self.restaurant_matrix.sum(axis=1))) 
         return self.ratings_matrix
 
     def find_individual_recs(self, user, ratings_matrix, n=None):

@@ -110,6 +110,7 @@ def clean_it_all(df):
     add_distance_from_galvanize(df)
     mile_from_g_df = df[df['dist_from_galvanize'] <= 1]
     mile_from_g_df_pruned = drop_unnecessaries(mile_from_g_df)
+    mile_from_g_df_pruned.set_index(keys='alias', inplace=True)
     return mile_from_g_df_pruned
 
 

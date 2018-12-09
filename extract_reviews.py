@@ -6,6 +6,8 @@ we_eat_db = we_eat_client['we_eat']
 website_collection = we_eat_db['websites']
 review_collection = we_eat_db['reviews']
 
+# To run this file and compile reviews into a database: db = collect_reviews(website_collection)
+
 def parse_review(review, alias):
     r = {}
     r['alias'] = alias

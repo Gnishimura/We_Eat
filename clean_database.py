@@ -17,6 +17,7 @@ def cat_counts(df):
     cat_series = df['cats']
     cat_dict = Counter()
     for row in cat_series:
+        temp = []
         temp = row.split(',')
         for cat in temp:
             cat_dict[cat] += 1

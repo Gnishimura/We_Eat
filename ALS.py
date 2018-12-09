@@ -9,7 +9,7 @@ from pyspark.sql.types import (
 from pyspark.ml.recommendation import ALS
 from pyspark.ml.evaluation import RegressionEvaluator
 import matplotlib.pyplot as plt
-import cPickle as pickle
+import pickle
 
 # Import pandas df containing info from review scrape
 
@@ -21,50 +21,76 @@ als_df = als_df[['user_id', 'item_id', 'rating', 'date']]
 
 class ALSRecommender():
     
-    def __init__(self, user_factors_df, item_factors_df, survey_results):
-        self.user_factors_df = user_factors_df
+    def __init__(self, item_factors_df, inverted_alias_dict, survey_results):
+        #self.user_factors_df = user_factors_df
         self.item_factors_df = item_factors_df
+        self.user_factors_array = np.array(self.user_factors_df['features'].tolist())
+        self.item_factors_array = np.array(self.item_factors_df['features'].tolist())
+        self.inverted_alias_dict = inverted_alias_dict
         self.survey_results = survey_results
 
+    # def predict_rating(self, user_idx, item_idx):
+    #     """Return the predicted rating of item by user (by iloc)."""
+    #     user_vector = self.user_factors_array[user_idx, :]
+    #     item_vector = self.item_factors_array[item_idx, :].T
+    #     return user_vector @ item_vector
 
-    def predict_rating(self, user_idx, item_idx):
-        """Return the predicted rating of item by user (by iloc)."""
-        user_factors_array = np.array(self.user_factors_df['features'].tolist())
-        item_factors_array = np.array(self.item_factors_df['features'].tolist())
+    # def predict_rating_by_id(self, user_id, item_id):
+    #     """Return the predicted rating of item by user (by id)."""
+    #     user_idx = self.user_factors_df.index[uf_df['id'] == user_id][0]
+    #     item_idx = self.item_factors_df.index[if_df['id'] == item_id][0]
+    #     return predict_rating(user_idx, item_idx)
 
-        user_vector = user_factors_array[user_idx, :]
-        item_vector = item_factors_array[item_idx, :].T
-        return user_vector @ item_vector
-
-    def predict_rating_by_id(user_id, item_id):
-        """Return the predicted rating of item by user (by id)."""
-        user_idx = self.user_factors_df.index[uf_df['id'] == user_id][0]
-        item_idx = self.item_factors_df.index[if_df['id'] == item_id][0]
-        return predict_rating(user_idx, item_idx)
-
-    def get_restaurant_indexes(user_ratings_df, item_factors_df):
+    def get_restaurant_indexes(self, user_ratings_df, item_factors_df):
         """Return an array of restaurant indexes that were reviewed by a particular user"""
         rest_idxs = []
         for item in user_ratings_df['item_id']:
-            rest_idx = if_df.index[if_df['id']==item]
+            rest_idx = self.item_factors_df.index[self.item_factors_df['id']==item]
             rest_idxs.append(rest_idx[0])
         return np.array(rest_idxs)
 
-    def newuser_predict(new_user_factors, item_factors_array):
+    def new_user_predict(self, new_user_factors, item_factors_array, username):
         """Return a new df with a single row containing the users predictions for every restaurant"""
         new_factor_list =[]
         for i in range(len(item_factors_array)):
             new_factor_list.append(np.dot(new_user_factors, item_factors_array[i]))
-        newuser_preds = pd.DataFrame([new_factor_list], index=['newuser'])
+        new_user_preds = pd.DataFrame([new_factor_list], index=[username])
         return new_user_preds
 
-    def change_rest_ids_to_aliases(new_user_preds):
+    def change_rest_ids_to_aliases(self, new_user_preds, inverted_alias_dict):
         """Use the inverted alias dictionary to rename columns by restaurant alias"""
-        new_user_preds = new_user_preds.rename(inv_alias_dict, axis=1)
-        new_user_preds.sort_values(by='newuser', axis=1, ascending=False, inplace=True)
+        new_user_preds = new_user_preds.rename(inverted_alias_dict, axis=1)
         return new_user_preds
+    
+    def build_user_ratings_df(self, survey_results):
+        """Return a df with columns 'item_id' and 'ratings' for an individual user's survey results"""
+        survey_standardized = {k: v / 2 for k, v in survey_results.items()} #make it the same as yelp's 1-5 rating
 
-    def get_preds_from_survey_results(survey_results):
+        #make a new dictionary with keys=restaurant_id, values=user's rating
+        id_to_rating = {k: survey_standardized[v] for k, v in self.inverted_alias_dict.items() if v in survey_standardized}
+        user_ratings_df = pd.DataFrame.from_dict(id_to_rating, orient='index')
+        user_ratings_df.reset_index(inplace=True)
+        user_ratings_df.rename(columns={'index':'item_id', 0:'rating'}, inplace=True)
+        return user_ratings_df
+
+    def get_preds_from_single_survey_results(self, username, survey_results):
+        """Return a df of predictions user preferences for every restaurant, given the user's survey results"""
+        user_ratings_df = self.build_user_ratings_df(survey_results)
+        rest_idxs = self.get_restaurant_indexes(user_ratings_df, self.item_factors_df)
+        latent_item_features = self.item_factors_array[rest_idxs]
+        survey_ratings = user_ratings_df['rating'].values
+
+        X, residuals, rank, s = np.linalg.lstsq(latent_item_features, survey_ratings)
+        new_user_preds = self.new_user_predict(X, self.item_factors_array, username)
+        new_user_named_preds = self.change_rest_ids_to_aliases(new_user_preds, self.inverted_alias_dict)
+        return new_user_named_preds
+    
+    def compile_preds_database(self, all_surveys):
+        preds = []
+        for k, v in all_surveys.items():
+            preds.append(self.get_preds_from_single_survey_results(k, v))
+        
+        return pd.concat(preds, axis=0, sort=False)
 
 
 

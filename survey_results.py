@@ -74,6 +74,16 @@ grant = {'the-pink-door-seattle-4': 7,
                           'vons-1000-spirits-seattle-4': 4,
                           'tamarind-tree-seattle': 5}
 
-survey_results = [gabe, nicole, jordan, jonny, alex, grant]
+lea = {'the-pink-door-seattle-4': 5,
+                          'harbor-city-restaurant-seattle': 10,
+                          'japonessa-sushi-cocina-seattle': 10,
+                          'metropolitan-grill-seattle': 1,
+                          'el-borracho-seattle': 4,
+                          'café-campagne-seattle-3': 6,
+                          'mod-pizza-seattle-7': 2,
+                          'specialtys-café-and-bakery-seattle-34': 7,
+                          'vons-1000-spirits-seattle-4': 2,
+                          'tamarind-tree-seattle': 9}
 
-usernames = ['gabe', 'nicole', 'jordan', 'jonny', 'alex', 'grant']
+survey = {'gabe': gabe, 'nicole': nicole, 'jordan': jordan, 'jonny': jonny, 'alex': alex, 'grant': grant, 'lea': lea}
+

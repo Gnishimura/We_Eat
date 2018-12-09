@@ -62,9 +62,9 @@ class ALSRecommender():
         new_user_preds = new_user_preds.rename(inverted_alias_dict, axis=1)
         return new_user_preds
     
-    def build_user_ratings_df(self, survey_results):
+    def build_user_ratings_df(self):
         """Return a df with columns 'item_id' and 'ratings' for an individual user's survey results"""
-        survey_standardized = {k: v / 2 for k, v in survey_results.items()} #make it the same as yelp's 1-5 rating
+        survey_standardized = {k: v / 2 for k, v in self.survey_results.items()} #make it the same as yelp's 1-5 rating
 
         #make a new dictionary with keys=restaurant_id, values=user's rating
         id_to_rating = {k: survey_standardized[v] for k, v in self.inverted_alias_dict.items() if v in survey_standardized}
@@ -73,9 +73,9 @@ class ALSRecommender():
         user_ratings_df.rename(columns={'index':'item_id', 0:'rating'}, inplace=True)
         return user_ratings_df
 
-    def get_preds_from_single_survey_results(self, username, survey_results):
+    def get_preds_from_single_survey_results(self, username):
         """Return a df of predictions user preferences for every restaurant, given the user's survey results"""
-        user_ratings_df = self.build_user_ratings_df(survey_results)
+        user_ratings_df = self.build_user_ratings_df(self.survey_results)
         rest_idxs = self.get_restaurant_indexes(user_ratings_df, self.item_factors_df)
         latent_item_features = self.item_factors_array[rest_idxs]
         survey_ratings = user_ratings_df['rating'].values

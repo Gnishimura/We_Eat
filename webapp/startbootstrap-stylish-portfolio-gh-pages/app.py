@@ -1,5 +1,9 @@
 from flask import Flask, render_template
-from ALS import ALSRecommender
+from ALS_recommender import ALSRecommender
+import pandas as pd
+import numpy as np
+
+import pickle
 
 
 app = Flask(__name__, static_url_path='')

@@ -5,17 +5,13 @@ import numpy as np
 
 import pickle
 
-
 app = Flask(__name__, static_url_path='')
-
-#loaded_model = pickle.load(open('____.sav', 'rb'))
-#prediction = get_pred_one(url, loaded_model)
 
 with open('item_factors_df.pkl', 'rb') as f:
     item_factors = pickle.load(f)
 
-
-
+with open('inv_alias_dict.pickle', 'rb') as g:
+    inv_alias_dict = pickle.load(g)
 
 @app.route('/')
 def home():
@@ -33,7 +29,6 @@ def vote():
     (corresponding to the username key above) in the survey_results dictionary"""
 
     data = request.json
-    survey_results = {}
     login()
     survey_results["Gabe"] = request["user_data"]
     
@@ -42,8 +37,14 @@ def vote():
 def recommend():
     """Return a recommendation, given two usernames."""
     data = request.json
+    recommender = ALSRecommender(item_factors, inv_alias_dict)
+    single_user_survey_results = recommender.get_preds_df_from_survey(#insert survey results from website here)
+    recommender.add_to_preds_df(single_user_survey_results)
+    recommender.get_a_rec(user1, user2)
+
     prediction = model.predict_proba([data['user_input']])
-    return jsonify({'probability of spam': prediction[0][1]})
+
+    return jsonify({'go eat HERE!': prediction[0][1]})
 
 
 

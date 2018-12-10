@@ -21,6 +21,9 @@
     <!-- Custom CSS -->
     <link href="css/stylish-portfolio.min.css" rel="stylesheet">
 
+    <script type="text/javascript" src="brython.js"></script>
+		<script type="text/javascript" src="brython_stdlib.js"></script>
+
   </head>
 
   <body id="page-top"> onload="brython(1)">
@@ -28,18 +31,18 @@
         from browser import document, ajax
         import json
 
-  def get_prediction(ev):
-  """Get the predicted probability."""
-  req = ajax.ajax()
-  req.bind('complete', on_complete)
-  req.open('POST', '/predict', True)
-  req.set_header('content-type','application/json')
-  data = json.dumps({'user_input': document['user_input'].value})
-  req.send(data)
-  document["predict_button"].bind("click", get_prediction)
+        def get_prediction(ev):
+        """Get the predicted probability."""
+        req = ajax.ajax()
+        req.bind('complete', on_complete)
+        req.open('POST', '/predict', True)
+        req.set_header('content-type','application/json')
+        data = json.dumps({'user_input': document['user_input'].value})
+        req.send(data)
+        document["vote_button"].bind("click", get_prediction)
       </script>
   <textarea id="user_input"></textarea>
-	<button id="predict_button">Predict!</button>
+	<button id="vote_button">Vote!</button>
   <div id="result"></div>
   
     <!-- Navigation -->

@@ -47,6 +47,6 @@ class PictureSurvey():
 
 
 
-def build_survey():
-    pass
+    def build_survey():
+        pass
         

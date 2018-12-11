@@ -13,7 +13,7 @@ import pickle
 
 # Import pandas df containing info from review scrape
 
-als_df = pd.read_pickle('../data/als_df.pkl')
+als_df = pd.read_pickle('data/als_df.pkl')
 als_df.reset_index(drop=True, inplace=True)
 als_df = als_df[['user_id', 'item_id', 'rating', 'date']]
 
@@ -93,7 +93,7 @@ class ALSRecommender():
         return double_df.sort_values(by=['mean'], ascending=False)
     
     def get_a_rec(self, user1, user2, preds_database):
-        sorted_recs = self.sort_recs_for_two(user1['user'], user2['user'], preds_database).head(30)
+        sorted_recs = self.sort_recs_for_two(user1, user2, preds_database).head(30)
         normalized_weights = sorted_recs['mean'] / sorted_recs['mean'].sum()
         return sorted_recs.sample(1, weights=(sorted_recs['mean'] / normalized_weights))
 

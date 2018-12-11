@@ -11,12 +11,13 @@
     </head>
     <body onload="brython(1)">
         <script type="text/python3">
-        from browser import document, ajax
+        from browser import document, ajax, alert
 
         import json
         import warnings
   
         def show_results(response):
+            alert("Request was good!" + str(response))
             if response.status==200 or response.status==0:
                 document["result"].html = response.text
             else:
@@ -43,6 +44,27 @@
             req.send(data)
 
         document["submit_button"].bind("click", submit_survey)
+        
+        def eating_partners(ev):
+            """sends the names of users to /recommend"""
+            req = ajax.ajax()
+            req.bind('complete', show_results)
+            user1 = document['user1'].value
+            user2 = document['user2'].value
+            req.open('GET', '/recommend/' + user1 + '/' + user2 , True)
+            req.set_header('content-type','application/json')
+            data = json.dumps({'user1': document['user1'].value, 
+                               'user2': document['user2'].value})
+            req.send(data)
+
+
+
+
+
+
+
+
+
 
         def show_rec(ev):
             """shows rec given two username inputs"""
@@ -50,7 +72,7 @@
             req.bind('complete', show_results)
             
 
-        document["recommend_button"].bind("click", show_rec)
+        document["recommend_button"].bind("click", eating_partners)
 
         </script> 
         
@@ -85,9 +107,10 @@
     
     <div id="recommend">
     Who's eating?! Enter the valid usernames of two people who wish to dine
-    <input id="eating_partner1">
-    <input id="eating_partner2">
+    <input id="user1">
+    <input id="user2">
     <button id="recommend_button">Get your restaurant recommendation</button>
     </div>
+    <div id="result"></div>
     </body>
 </html>

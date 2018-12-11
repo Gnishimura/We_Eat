@@ -21,11 +21,11 @@ als_df = als_df[['user_id', 'item_id', 'rating', 'date']]
 
 class ALSRecommender():
     
-    def __init__(self, item_factors_df, inverted_alias_dict, preds_df):
+    def __init__(self, item_factors_df, inverted_alias_dict):
         self.item_factors_df = item_factors_df
         self.item_factors_array = np.array(self.item_factors_df['features'].tolist())
         self.inverted_alias_dict = inverted_alias_dict
-        self.preds_df = preds_df
+        #self.preds_df = preds_df
         #self.survey_results = survey_results
 
     def get_restaurant_indexes(self, user_ratings_df, item_factors_df):
@@ -74,18 +74,16 @@ class ALSRecommender():
     def user_preds_from_survey(self, user_survey):
         """Return a df of predictions user preferences for every restaurant, given the user's survey results"""
         
-        for k, v in user_survey.items():
+        user_ratings_df = self.get_user_ratings_df(user_survey['survey'])
+        rest_idxs = self.get_restaurant_indexes(user_ratings_df, self.item_factors_df)
+        user_factors_array = self.get_user_factors_array(self.item_factors_array, rest_idxs, user_ratings_df)
 
-            user_ratings_df = self.get_user_ratings_df(v)
-            rest_idxs = self.get_restaurant_indexes(user_ratings_df, self.item_factors_df)
-            user_factors_array = self.get_user_factors_array(self.item_factors_array, rest_idxs, user_ratings_df)
+        new_user_preds = self.new_user_predict(user_factors_array, self.item_factors_array, user_survey['user'])
+        new_user_named_preds = self.change_rest_ids_to_aliases(new_user_preds, self.inverted_alias_dict)
+        return new_user_named_preds
 
-            new_user_preds = self.new_user_predict(user_factors_array, self.item_factors_array, k)
-            new_user_named_preds = self.change_rest_ids_to_aliases(new_user_preds, self.inverted_alias_dict)
-            return new_user_named_preds
-    
-    def add_to_preds_df(single_user_preds_df):
-        return pd.concat([self.preds_df, single_user_preds_df], axis=0, sort=False)
+    def compile_df(self, user1_df, user2_df):
+        return pd.concat([user1_df, user2_df], axis=0, sort=False)
         
     def sort_recs_for_two(self, user1, user2, preds_database):    
         u1 = preds_database.loc[user1]
@@ -95,7 +93,7 @@ class ALSRecommender():
         return double_df.sort_values(by=['mean'], ascending=False)
     
     def get_a_rec(self, user1, user2, preds_database):
-        sorted_recs = sort_recs_for_two(user1, user2, preds_database).head(30)
+        sorted_recs = self.sort_recs_for_two(user1['user'], user2['user'], preds_database).head(30)
         normalized_weights = sorted_recs['mean'] / sorted_recs['mean'].sum()
         return sorted_recs.sample(1, weights=(sorted_recs['mean'] / normalized_weights))
 

@@ -6,7 +6,7 @@
         <script type="text/javascript" src="brython.js"></script>
         <script type="text/javascript" src="brython_stdlib.js"></script>
         <style>
-        img.thumbnail {max-width: 8em; max-height:8em}
+        img.thumbnail {max-width: 12em; max-height:12em}
         </style>
     </head>
     <body onload="brython(1)">
@@ -27,11 +27,12 @@
             survey = {}
             for field in document.select("div#survey input"):
                 id_ = field.attrs['id']
+                val = field.value
                 if id_=='username':
-                    username = field.value
-                else:    
+                    username = val
+                elif val and val.isnumeric():    
                     restaurant_alias = id_.partition('rating_')[2]
-                    survey[restaurant_alias] = field.value 
+                    survey[restaurant_alias] = int(val)
             data = json.dumps({'user': username, 'survey': survey})
             print(data)
             req = ajax.ajax()
@@ -41,6 +42,9 @@
             req.send(data)
 
         document["submit_button"].bind("click", submit_survey)
+
+        def show_rec(ev):
+
         </script> 
         
     
@@ -73,6 +77,13 @@
     <button id="submit_button">Submit!</button>
     
     </div>
-
+    
+    
+    <div id="recommend">
+    Who's eating?! Enter the valid usernames of two users who wish to co-dine
+    <input id="eating_partner1">
+    <input id="eating_partner2">
+    <button id="recommend_button">Get your restaurant recommendation</button>
+    </div>
     </body>
 </html>

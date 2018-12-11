@@ -19,7 +19,7 @@
     <link href="vendor/simple-line-icons/css/simple-line-icons.css" rel="stylesheet">
 
     <!-- Custom CSS -->
-    <link href="css/stylish-portfolio.min.css" rel="stylesheet">
+    <link href="css/stylish-portfolio.css" rel="stylesheet">
 
     <script type="text/javascript" src="brython.js"></script>
 		<script type="text/javascript" src="brython_stdlib.js"></script>
@@ -40,6 +40,8 @@
         data = json.dumps({'user_input': document['user_input'].value})
         req.send(data)
         document["vote_button"].bind("click", get_prediction)
+
+        
       </script>
   <textarea id="user_input"></textarea>
 	<button id="vote_button">Vote!</button>
@@ -74,6 +76,7 @@
 
     <!-- Header -->
     <header class="masthead d-flex">
+      
       <div class="container text-center my-auto">
         <h1 class="mb-1">We Eat</h1>
         <h3 class="mb-5">

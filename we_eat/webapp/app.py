@@ -54,7 +54,7 @@ def recommend_for_two_users(user1, user2):
     user2_df = recommender.user_preds_from_survey(user2_survey)
     compiled_df = recommender.compile_df(user1_df, user2_df)
     rec = recommender.get_a_rec(user1, user2, compiled_df)
-    return jsonify({'recs': rec.index[0]})
+    return f'https://www.yelp.com/biz/{rec.index[0]}'
 
 
 #.to_dict(orient='records')

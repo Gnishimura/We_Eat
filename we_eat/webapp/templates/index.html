@@ -24,6 +24,7 @@
   
      
         def submit_survey(ev):
+            """adds survey results and username into mongodb 'survey' collection"""
             survey = {}
             for field in document.select("div#survey input"):
                 id_ = field.attrs['id']
@@ -44,11 +45,14 @@
         document["submit_button"].bind("click", submit_survey)
 
         def show_rec(ev):
+            """shows rec given two username inputs"""
+            req = ajax.ajax()
+            req.bind('complete', show_results)
+            
+
+        document["recommend_button"].bind("click", show_rec)
 
         </script> 
-        
-    
-        
         
     <div id="survey">
     Enter Username
@@ -80,7 +84,7 @@
     
     
     <div id="recommend">
-    Who's eating?! Enter the valid usernames of two users who wish to co-dine
+    Who's eating?! Enter the valid usernames of two people who wish to dine
     <input id="eating_partner1">
     <input id="eating_partner2">
     <button id="recommend_button">Get your restaurant recommendation</button>

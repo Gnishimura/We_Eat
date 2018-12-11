@@ -13,7 +13,7 @@ import pickle
 
 # Import pandas df containing info from review scrape
 
-als_df = pd.read_pickle('als_df.pkl')
+als_df = pd.read_pickle('../data/als_df.pkl')
 als_df.reset_index(drop=True, inplace=True)
 als_df = als_df[['user_id', 'item_id', 'rating', 'date']]
 

@@ -12,10 +12,10 @@ we_eat_database = we_eat_client['we_eat']
 
 app = Flask(__name__, static_url_path='')
 
-with open('data/item_factors_df.pkl', 'rb') as f:
+with open('../../data/item_factors_df.pkl', 'rb') as f:
     item_factors = pickle.load(f)
 
-with open('data/inv_alias_dict.pickle', 'rb') as g:
+with open('../../data/inv_alias_dict.pickle', 'rb') as g:
     inv_alias_dict = pickle.load(g)
 
 @app.route('/')

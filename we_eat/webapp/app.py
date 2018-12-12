@@ -25,7 +25,6 @@ with open('data/inv_alias_dict.pickle', 'rb') as g:
 def home():
     return render_template('stylish.html')
 
-
 @app.route('/survey', methods=['POST'])
 def survey():
     data = request.get_json()
@@ -42,9 +41,10 @@ def recommend_for_two_users(user1, user2):
     user1_df = recommender.user_preds_from_survey(user1_survey)
     user2_df = recommender.user_preds_from_survey(user2_survey)
     compiled_df = recommender.compile_df(user1_df, user2_df)
-    rec = recommender.get_a_rec(user1, user2, compiled_df)
-    return f'https://www.yelp.com/biz/{rec.index[0]}'
-
+    top_three = recommender.top_recs(user1, user2, compiled_df)
+    top_three_rest = list(top_three.index)
+    random_rec = recommender.get_a_rec(user1, user2, compiled_df)
+    return f'The top 3 matches for {user1} and {user2} are: {top_three_rest[0]}, {top_three_rest[1]}, {top_three_rest[2]}, PLUS a random rec out of your top 30: https://www.yelp.com/biz/{random_rec.index[0]}'
 
 
 if __name__ == '__main__':

@@ -25,27 +25,60 @@
 		<script type="text/javascript" src="brython_stdlib.js"></script>
 
   </head>
+  <style>
+    img.thumbnail {max-width: 30em; max-height:30em}
+  </style>
 
-  <body id="page-top"> onload="brython(1)">
+  <body id="page-top"> 
+    <body onload="brython(1)">
       <script type="text/python3">
         from browser import document, ajax
+
         import json
+        import warnings
+  
+        def show_results(response):
+            if response.status==200 or response.status==0:
+                document["result"].html = response.text
+            else:
+                warnings.warn(response.text)
+  
+        def submit_survey(ev):
+            """adds survey results and username into mongodb 'survey' collection"""
+            survey = {}
+            for field in document.select("div#survey input"):
+                id_ = field.attrs['id']
+                val = field.value
+                if id_=='username':
+                    username = val
+                elif val and val.isnumeric():    
+                    restaurant_alias = id_.partition('rating_')[2]
+                    survey[restaurant_alias] = int(val)
+            data = json.dumps({'user': username, 'survey': survey})
+            print(data)
+            req = ajax.ajax()
+            req.bind('complete', show_results)
+            req.open('POST', '/survey', True)
+            req.set_header('content-type','application/json')
+            req.send(data)
 
-        def get_prediction(ev):
-        """Get the predicted probability."""
-        req = ajax.ajax()
-        req.bind('complete', on_complete)
-        req.open('POST', '/predict', True)
-        req.set_header('content-type','application/json')
-        data = json.dumps({'user_input': document['user_input'].value})
-        req.send(data)
-        document["vote_button"].bind("click", get_prediction)
+        document["submit_button"].bind("click", submit_survey)
+        
+        def eating_partners(ev):
+            """sends the names of users to /recommend"""
+            req = ajax.ajax()
+            req.bind('complete', show_results)
+            user1 = document['user1'].value
+            user2 = document['user2'].value
+            req.open('GET', '/recommend/' + user1 + '/' + user2 , True)
+            req.set_header('content-type','application/json')
+            data = json.dumps({'user1': document['user1'].value, 
+                               'user2': document['user2'].value})
+            req.send(data)
 
+        document["recommend_button"].bind("click", eating_partners)
         
       </script>
-  <textarea id="user_input"></textarea>
-	<button id="vote_button">Vote!</button>
-  <div id="result"></div>
   
     <!-- Navigation -->
     <a class="menu-toggle rounded" href="#">
@@ -93,50 +126,44 @@
         <div class="row">
           <div class="col-lg-10 mx-auto">
             <h2>Let's find out your preferences!</h2>
-            <p class="lead mb-5">Please click on any of the photos below that represent your favorite type of restaurants</p>
-            <a class="btn btn-dark btn-xl js-scroll-trigger" href="#services">Food From Local Restaurants</a>
+            <p class="lead mb-5">Please enter a number from 1-10 in the boxes to the left of the restaurant food pic</p>
+            <p class="lead mb-5">10 = That's my kind of food!  1 = Yuck!</p>
+        <!-- <a class="btn btn-dark btn-xl js-scroll-trigger" href="#recs">I already took this survey, I want to eat now!</a> -->
+
           </div>
-          <div class="row"> 
-            <div class="column">
-              <img src="img/pike-place-chowder-seattle.jpg">
-              <img src="img/bacco-cafe-and-bistro-seattle-2.jpg">
-              <img src="img/biscuit-bitch-seattle.jpg">
-              <img src="img/café-campagne-seattle-3.jpg">
-              <img src="img/green-leaf-vietnamese-restaurant-seattle.jpg">
-              <img src="img/il-corvo-pasta-seattle.jpg">
-              <img src="img/japonessa-sushi-cocina-seattle.jpg">
-            </div>
-            <div class="column">
-              <img src="img/le-panier-french-bakery-seattle.jpg">
-              <img src="img/mee-sum-pastry-seattle.jpg">
-              <img src="img/metropolitan-grill-seattle.jpg">
-              <img src="img/michou-seattle.jpg">
-              <img src="img/purple-café-and-wine-bar-seattle-3.jpg">
-              <img src="img/tats-delicatessen-seattle.jpg">
-            </div> 
-            <div class="column">
-              <img src="img/beechers-handmade-cheese-seattle.jpg">
-              <img src="img/casco-antiguo-seattle.jpg">
-              <img src="img/mikes-noodle-house-seattle.jpg">
-              <img src="img/mod-pizza-seattle-7.jpg">
-              <img src="img/radiator-whiskey-seattle.jpg">
-              <img src="img/ba-bar-seattle.jpg">
-              <img src="img/paris.jpg">
-            </div>
-            <div class="column">
-              <img src="img/the-crumpet-shop-seattle.jpg">
-              <img src="img/maneki-seattle.jpg">
-              <img src="img/italian-family-pizza-seattle.jpg">
-              <img src="img/chan-seattle-seattle-2.jpg">
-              <img src="img/el-borracho-seattle.jpg	">
-              <img src="img/specialtys-café-and-bakery-seattle-34.jpg">
-            </div>
+          <div id="survey"> 
+            Please enter your username here: <input id="username">
+
+            <img src="img/green-leaf-vietnamese-restaurant-seattle.jpg" class="thumbnail">
+            <input id="rating_green-leaf-vietnamese-restaurant-seattle"> 
+            <img src="img/il-corvo-pasta-seattle.jpg" class="thumbnail">
+            <input id="rating_il-corvo-pasta-seattle"> 
+            <img src="img/mee-sum-pastry-seattle.jpg" class="thumbnail">
+            <input id="rating_mee-sum-pastry-seattle"> 
+            <img src="img/mod-pizza-seattle-7.jpg" class="thumbnail">
+            <input id="rating_mod-pizza-seattle-7"> 
+            <img src="img/ba-bar-seattle.jpg" class="thumbnail">
+            <input id="rating_ba-bar-seattle"> 
+            <img src="img/pike-place-chowder-seattle.jpg" class="thumbnail">
+            <input id="rating_pike-place-chowder-seattle"> 
+            <img src="img/bacco-cafe-and-bistro-seattle-2.jpg" class="thumbnail">
+            <input id="rating_bacco-cafe-and-bistro-seattle-2"> 
+            <img src="img/metropolitan-grill-seattle.jpg" class="thumbnail">
+            <input id="rating_metropolitan-grill-seattle"> 
+            <img src="img/el-borracho-seattle.jpg" class="thumbnail">
+            <input id="rating_el-borracho-seattle"> 
+            <img src="img/specialtys-café-and-bakery-seattle-34.jpg" class="thumbnail">
+            <input id="rating_specialtys-café-and-bakery-seattle-34">
+            <img src="img/maneki-seattle.jpg" class = "thumbnail">
+            <input id="rating_maneki-seattle">
+            
+            <button id="submit_button">Submit!</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Services -->
+    <!-- Services
     <section class="content-section bg-primary text-white text-center" id="services">
       <div class="container">
         <div class="content-section-heading">
@@ -184,19 +211,22 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
 
     <!-- Callout -->
     <section class="callout">
       <div class="container text-center">
-        <h2 class="mx-auto mb-5">Welcome to
-          <em>your</em>
-          next website!</h2>
-        <a class="btn btn-primary btn-xl" href="https://startbootstrap.com/template-overviews/stylish-portfolio/">Download Now!</a>
+          <div id="recommend">
+              <h2 class="mx-auto mb-5">Who do you want to eat with? Enter the valid usernames of two people who wish to dine</h2>
+              <input id="user1">
+              <input id="user2">
+              <button id="recommend_button">Get your restaurant recommendation</button>
+          </div>
       </div>
+      <div id="result"></div>
     </section>
 
-    <!-- Portfolio -->
+    <!-- Portfolio
     <section class="content-section" id="portfolio">
       <div class="container">
         <div class="content-section-heading text-center">
@@ -250,23 +280,23 @@
           </div>
         </div>
       </div>
-    </section>
+    </section> -->
 
-    <!-- Call to Action -->
+    <!-- Call to Action
     <section class="content-section bg-primary text-white">
       <div class="container text-center">
         <h2 class="mb-4">The buttons below are impossible to resist...</h2>
         <a href="#" class="btn btn-xl btn-light mr-4">Click Me!</a>
         <a href="#" class="btn btn-xl btn-dark">Look at Me!</a>
       </div>
-    </section>
+    </section> -->
 
     <!-- Map -->
     <section id="contact" class="map">
-      <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;aq=0&amp;oq=twitter&amp;sll=28.659344,-81.187888&amp;sspn=0.128789,0.264187&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A&amp;output=embed"></iframe>
+      <!-- <iframe width="100%" height="100%" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="https://maps.google.com/maps?f=q&amp;source=s_q&amp;hl=en&amp;geocode=&amp;q=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;aq=0&amp;oq=twitter&amp;sll=28.659344,-81.187888&amp;sspn=0.128789,0.264187&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A&amp;output=embed"></iframe> -->
       <br/>
       <small>
-        <a href="https://maps.google.com/maps?f=q&amp;source=embed&amp;hl=en&amp;geocode=&amp;q=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;aq=0&amp;oq=twitter&amp;sll=28.659344,-81.187888&amp;sspn=0.128789,0.264187&amp;ie=UTF8&amp;hq=Twitter,+Inc.,+Market+Street,+San+Francisco,+CA&amp;t=m&amp;z=15&amp;iwloc=A"></a>
+        <a href="https://www.google.com/maps/place/Galvanize+-+Seattle/@47.6015566,-122.3345291,17z/data=!4m5!3m4!1s0x54906aa4c2d37a93:0xc82c719d1795d092!8m2!3d47.5990148!4d-122.3338371"></a>
       </small>
     </section>
 

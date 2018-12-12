@@ -23,7 +23,7 @@ with open('data/inv_alias_dict.pickle', 'rb') as g:
 
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('stylish.html')
 
 
 @app.route('/survey', methods=['POST'])
@@ -32,17 +32,6 @@ def survey():
     survey_collection.insert_one(data)
     print(data)
     return f"received data for {data['user']}"
-
-
-# @app.route('/partners', methods=['POST'])
-# def get_partners():
-#     """Input two usernames."""
-#     data = request.get_json()
-#     partner_collection.insert_one(data)
-#     print(data)
-#     return f"received data for {data['user1'], data['user2']}"
-#     #TODO(Gabe): get user 1 and user 2 from data
-
 
 @app.route('/recommend/<user1>/<user2>', methods=['GET'])
 def recommend_for_two_users(user1, user2):
@@ -55,9 +44,6 @@ def recommend_for_two_users(user1, user2):
     compiled_df = recommender.compile_df(user1_df, user2_df)
     rec = recommender.get_a_rec(user1, user2, compiled_df)
     return f'https://www.yelp.com/biz/{rec.index[0]}'
-
-
-#.to_dict(orient='records')
 
 
 

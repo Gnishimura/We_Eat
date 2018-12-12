@@ -97,8 +97,13 @@ class ALSRecommender():
         normalized_weights = sorted_recs['mean'] / sorted_recs['mean'].sum()
         return sorted_recs.sample(1, weights=(sorted_recs['mean'] / normalized_weights))
 
+    def top_recs(self, user1, user2, preds_database):
+        return self.sort_recs_for_two(user1, user2, preds_database).head(3)
 
-
+    def min_dissat(self, user1, user2, preds_database):
+        """I want to sort the restaurants by minimizing the dissatisfaction for both parties
+         - so like, which restaurant has the highest rating for BOTH parties"""
+         
 
 
 #Things that I probably don't need:

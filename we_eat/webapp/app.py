@@ -30,7 +30,7 @@ def survey():
     data = request.get_json()
     survey_collection.insert_one(data)
     print(data)
-    return f"received data for {data['user']}"
+    return f"Thanks, {data['user']}! We've received your survey."
 
 @app.route('/recommend/<user1>/<user2>', methods=['GET'])
 def recommend_for_two_users(user1, user2):
@@ -44,8 +44,9 @@ def recommend_for_two_users(user1, user2):
     top_three = recommender.top_recs(user1, user2, compiled_df)
     top_three_rest = list(top_three.index)
     random_rec = recommender.get_a_rec(user1, user2, compiled_df)
-    return f'The top 3 matches for {user1} and {user2} are: {top_three_rest[0]}, {top_three_rest[1]}, {top_three_rest[2]}, PLUS a random rec out of your top 30: <a href="https://www.yelp.com/biz/{random_rec.index[0]}">{random_rec.index[0]}</a>'
+    return f'<h2> Try this place out!  <a href="https://www.yelp.com/biz/{random_rec.index[0]}">{random_rec.index[0]}</a></h2>'
 
+#The top 3 matches for {user1} and {user2} are: {top_three_rest[0]}, {top_three_rest[1]}, {top_three_rest[2]}, PLUS a random rec out of your top 30
 
 if __name__ == '__main__':
     app.run(debug=True)

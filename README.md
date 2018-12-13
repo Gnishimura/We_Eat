@@ -36,28 +36,40 @@ Eesh.  Looks like a thirty minute conversation going nowhere.
 A restaurant choice can make or break a date night or a brunch gathering with friends.  Don't leave it up to chance, WeEat's got your back.
 
 ---
-Data:
+**Data**
+
+
 Data was compiled from a combination of requests to the Yelp API and scraping reviews online using BeautifulSoup. All data was saved in a MongoDB.
 - 621 restaurants (within 1 mile radius of Galvanize)
 - 1524 unique users (who had reviewed >1 restaurant in the dataset)
 - 5216 reviews
 
-Methods:
-| Data Collection |-->| Collaborative Filtering Model|-->|-->| Recommendations |-->|
-| --- | --- | --- | --- | --- | --- | --- | ---|
-| Store restaurant info from Yelp API and scraped reviews in MongoDB | Train a collaborative filtering model using Spark ALS | Matrix factorization to get latent restaurant features | Users take survey to address cold start problem ==> np.linalg.lstsq to get latent user features | Matrix multiplication of latent user features and latent restaurant features to find a user's rating score for every restaurant in the dataset | Store user rating matrices in MongoDB | Sort using principle of minimum dissatisfaction to provide recommendations |  Deploy to website using Flask Bootstrap
 
-Evaluation:
+**Methods**
+
+
+|  Data Collection | Collaborative Filtering Model  |   |   |   | Recommendations  |   |
+|---|---|---|---|---|---|---|
+| Store restaurant info from Yelp API and scraped reviews in MongoDB  |  Train a collaborative filtering model using Spark ALS | Matrix factorization to get latent restaurant features |  Users take survey to address cold start problem ==> np.linalg.lstsq to get latent user features | Matrix multiplication of latent user features and latent restaurant features to find a user's rating score for every restaurant in the dataset  |  Store user rating matrices in MongoDB |  Sort using principle of minimum dissatisfaction to provide recommendations | Deploy to website using Flask Bootstrap  |
+
+
+**Evaluation**
+
+
 One of the most important questions to ask about recommender systems is: how do you know it works?  The model is still in development so it hasn't been officially deployed yet, but I plan to evaluate the quality of the recommendations through a rating system.  Users will be able to provide ratings on restaurants that they actually eat at.  This will not only allow me to evaluate the performance of the model, but the recommendations for users will also improve the more they use the app.
 
-Next Steps:
+**Next Steps**
+
+
 Add filters: Vegan/Vegetarian/Gluten-Free/Kids/Dogs/etc
 Add features: Cool stats. Weights on walking distance. Brunch/Lunch/Dinner settings. 
 Make it mobile and add review capability for users after they actually eat at restaurants.
 Connect with social media: FB, dating apps, etc.
 
 ---
-Tools and Packages Used:
+**Tools and Packages Used**
+
+
 Stack:
 * python
 * git

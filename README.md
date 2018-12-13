@@ -43,7 +43,7 @@ Data was compiled from a combination of requests to the Yelp API and scraping re
 - 5216 reviews
 
 Methods:
-| Data Collection |-->|-->| Collaborative Filtering Model|-->|-->| Recommendations |-->|
+| Data Collection |-->| Collaborative Filtering Model|-->|-->| Recommendations |-->|
 | --- | --- | --- | --- | --- | --- | --- | ---|
 | Store restaurant info from Yelp API and scraped reviews in MongoDB | Train a collaborative filtering model using Spark ALS | Matrix factorization to get latent restaurant features | Users take survey to address cold start problem ==> np.linalg.lstsq to get latent user features | Matrix multiplication of latent user features and latent restaurant features to find a user's rating score for every restaurant in the dataset | Store user rating matrices in MongoDB | Sort using principle of minimum dissatisfaction to provide recommendations |  Deploy to website using Flask Bootstrap
 

@@ -394,3 +394,20 @@ a:hover, a:focus, a:active {
   color: #ecb807 !important;
 }
 
+.marginedRow {
+  margin: 5em;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+}
+
+.thumbnail {
+  height: 30em;
+  width: 30em;
+}
+
+.input {
+  height: 10%;
+  width: 20%;
+  margin: 3em;
+}

@@ -3,9 +3,11 @@
 
 How much time have you wasted trying to figure out where to eat with your partner or a group of friends?
 
->  "Where should we eat? 
->      "I'm cool with anywhere."
->        "Me, too.  I'll leave it up to you."
+> "Where should we eat?" 
+
+>       "I'm good with anything."
+
+>             "Me, too.  I'll leave it up to you."
 
 Enough with that. WeEat learns your tastes, sets up a restaurant profile you, and offers tailored recommendations that will leave everyone happy!
 
@@ -47,7 +49,7 @@ Data was compiled from a combination of requests to the Yelp API and scraping re
 ---
 ### Methods
 
-|  Data Collection | Collaborative Filtering Model  |   |   |   | Recommendations  |   |
+|  Data Collection | Collaborative Filtering Model|   |   |   | Recommend|   |
 |---|---|---|---|---|---|---|
 | Store restaurant info from Yelp API and scraped reviews in MongoDB  |  Train a collaborative filtering model using Spark ALS | Matrix factorization to get latent restaurant features |  Users take survey to address cold start problem ==> np.linalg.lstsq to get latent user features | Matrix multiplication of latent user features and latent restaurant features to find a user's rating score for every restaurant in the dataset  |  Store user rating matrices in MongoDB |  Sort using principle of minimum dissatisfaction to provide recommendations | Deploy to website using Flask Bootstrap  |
 

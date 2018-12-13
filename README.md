@@ -43,10 +43,18 @@ Data was compiled from a combination of requests to the Yelp API and scraping re
 - 5216 reviews
 
 Methods:
+| Data Collection |-->|-->| Collaborative Filtering Model|-->|-->| Recommendations |-->|
+| --- | --- | --- | --- | --- | --- | --- | ---|
+| Store restaurant info from Yelp API and scraped reviews in MongoDB | Train a collaborative filtering model using Spark ALS | Matrix factorization to get latent restaurant features | Users take survey to address cold start problem ==> np.linalg.lstsq to get latent user features | Matrix multiplication of latent user features and latent restaurant features to find a user's rating score for every restaurant in the dataset | Store user rating matrices in MongoDB | Sort using principle of minimum dissatisfaction to provide recommendations |  Deploy to website using Flask Bootstrap
 
-Gather restaurant info from Yelp API. ==> Scrape reviews to build get user rating data ==> Train a collaborative filtering model using Spark ALS ==> Matrix factorization to get latent restaurant features ==> Users take survey to address cold start problem ==> np.linalg.lstsq to get latent user features ==> Matrix multiplication of latent user features and latent restaurant features to find a user's rating score for every restaurant in the dataset ==> Compile MongoDB of user rating matrices ==> Sort using principle of minimum dissatisfaction to provide recommendations --> Deploy to website using Flask Bootstrap
+Evaluation:
+One of the most important questions to ask about recommender systems is: how do you know it works?  The model is still in development so it hasn't been officially deployed yet, but I plan to evaluate the quality of the recommendations through a rating system.  Users will be able to provide ratings on restaurants that they actually eat at.  This will not only allow me to evaluate the performance of the model, but the recommendations for users will also improve the more they use the app.
 
-
+Next Steps:
+Add filters: Vegan/Vegetarian/Gluten-Free/Kids/Dogs/etc
+Add features: Cool stats. Weights on walking distance. Brunch/Lunch/Dinner settings. 
+Make it mobile and add review capability for users after they actually eat at restaurants.
+Connect with social media: FB, dating apps, etc.
 
 ---
 Tools and Packages Used:
@@ -71,10 +79,10 @@ Modeling/Machine Learning
 * Pandas
 
 Web App:
-Flask
-Bootstrap
-HTML
-CSS
+* Flask
+* Bootstrap
+* HTML
+* CSS
 
 
 

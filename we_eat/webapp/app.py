@@ -30,7 +30,7 @@ def survey():
     data = request.get_json()
     survey_collection.insert_one(data)
     print(data)
-    return f"Thanks, {data['user']}! We've received your survey."
+    return f"<h2>Thanks, {data['user']}! We've received your survey.</h2>"
 
 @app.route('/recommend/<user1>/<user2>', methods=['GET'])
 def recommend_for_two_users(user1, user2):

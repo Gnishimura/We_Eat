@@ -1,14 +1,6 @@
 import pandas as pd
 import numpy as np
-import pyspark as ps
-from pyspark.sql import SparkSession
-from pyspark.sql.types import (
-    IntegerType, StringType, IntegerType, FloatType, 
-    StructField, StructType, DoubleType
-)
-from pyspark.ml.recommendation import ALS
-from pyspark.ml.evaluation import RegressionEvaluator
-import matplotlib.pyplot as plt
+
 import pickle
 
 # Import pandas df containing info from review scrape
@@ -16,8 +8,6 @@ import pickle
 als_df = pd.read_pickle('data/als_df.pkl')
 als_df.reset_index(drop=True, inplace=True)
 als_df = als_df[['user_id', 'item_id', 'rating', 'date']]
-
-# Start a spark session to train an ALS model
 
 class ALSRecommender():
     

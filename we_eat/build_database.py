@@ -21,6 +21,7 @@ default_params = {
     }
 
 def load_api_key(filename='/Users/gnishimura/.secrets/yelp_api_key.yaml'):
+    """Input a file with API key.  Keeps API keys hidden in yaml file"""
     with open(filename) as f:
         keys = yaml.load(f)
     api_key = keys['api_key']
@@ -39,6 +40,8 @@ def make_request(params, api_key):
     return data.get('businesses', None)
 
 def build_database(start=0, end=1000, location=None):
+    """Compiles database using load_api_key(), make_request(), and add_to_database_if_new.
+    start and end are default based on yelp's 1000 business max return.  Location optional."""
     params = default_params
     if location:
         params['location'] = location
@@ -57,6 +60,7 @@ def build_database(start=0, end=1000, location=None):
         time.sleep(1)
 
 def add_to_database_if_new(row):
+    """Only adds to MongoDB if the restaurant id is new"""
     if restaurant_collection.count_documents({'id': row['id']}) == 0:
         restaurant_collection.insert_one(row)
 

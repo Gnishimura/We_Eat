@@ -33,7 +33,7 @@ def make_cats_csv(df):
 
 def load_categories():
     """Loads a csv containing all the unique categories for restaurants in the database"""
-    with open('categories.csv') as f:
+    with open('data/categories.csv') as f:
         categories = [cat.strip() for cat in f.readlines()]
     return categories
 

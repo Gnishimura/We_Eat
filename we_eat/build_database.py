@@ -17,7 +17,6 @@ default_params = {
     'longitude': -122.3338371,
     'limit': 50,
     'radius': 1609,
-    'categories': 'halal'
     }
 
 def load_api_key(filename='/Users/gnishimura/.secrets/yelp_api_key.yaml'):

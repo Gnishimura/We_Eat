@@ -94,9 +94,10 @@ class ALSRecommender():
     def min_dissat(self, user1, user2, preds_database):
         """I want to sort the restaurants by minimizing the dissatisfaction for both parties
          - so like, which restaurant has the highest rating for BOTH parties"""
-         sorted_preds = sort_recs_for_two(user1, user2, preds_database)
-         for restaurant in sorted_preds:
-             return max(sorted_preds['user1'])
+        #  sorted_preds = sort_recs_for_two(user1, user2, preds_database)
+        #  for restaurant in sorted_preds:
+        #      return max(sorted_preds['user1'])
+        pass
          
 
 

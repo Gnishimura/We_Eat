@@ -402,8 +402,12 @@ a:hover, a:focus, a:active {
 }
 
 .thumbnail {
-  height: 30em;
-  width: 30em;
+  object-fit: cover;
+  width: 20em;
+  height: 20em;
+  padding: 2em;
+  padding-bottom: 0em !important;
+  margin-bottom: 0em;
 }
 
 .input {

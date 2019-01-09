@@ -26,22 +26,20 @@ class RestaurantRecommender():
         unweighted_prefs = ratings_matrix.loc[user]
         weighted_prefs = unweighted_prefs * popularity_weight * average_rating_weight
         return weighted_prefs.sort_values(ascending=False)[:n]
-
-
-    def max_sat_recs(self, user1, user2, n=None):
-        """Input two usernames and output a sorted pandas dataframe with the restaurants that received the
-        highest average ratings between the two users"""
-
-        u1 = self.find_individual_recs(user1, self.ratings_matrix)
-        u2 = self.find_individual_recs(user2, self.ratings_matrix)
-        
-        recs_df = pd.concat([u1, u2], axis=1, sort=False)
-        recs_df['mean'] = recs_df.mean(axis=1)
-        return recs_df.sort_values(by=['mean'], ascending=False)[:n]
     
     def min_dissat_recs(self, user1, user2, n=None):
-        recs_df = self.max_sat_recs(user1, user2)
-        pass
+        """Input two usernames and output a sorted pandas dataframe with the restaurants that received the
+        highest average and, in the case of ties, the highest minimum ratings between the two users"""
+        u1 = self.find_individual_recs(user1, self.ratings_matrix)
+        u2 = self.find_individual_recs(user2, self.ratings_matrix)
+
+        recs_df = pd.concat([u1, u2], axis=1, sort=False)
+        recs_df['mean'] = recs_df.mean(axis=1)
+
+        recs_df['mean']=recs_df.mean(axis=1)
+        recs_df['min']=recs_df.min(axis=1)
+        recs_df_sorted = recs_df.sort_values(by=['mean','min'], ascending=False)
+        return recs_df_sorted[:n]
 
     def produce_recs(self, user1, user2):
         # recs_df = self.max_sat_recs(user1, user2)

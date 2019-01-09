@@ -62,6 +62,8 @@ One of the most important questions to ask about recommender systems is: how do 
 * Add features: Cool stats. Weights on walking distance. Brunch/Lunch/Dinner settings. 
 * Make it mobile and add review capability for users after they actually eat at restaurants.
 * Connect with social media: FB, dating apps, etc.
+* Explore meaning of latent features in order to improve initial survey
+
 
 ---
 ### Tools and Packages Used

@@ -10,7 +10,8 @@ als_df.reset_index(drop=True, inplace=True)
 als_df = als_df[['user_id', 'item_id', 'rating', 'date']]
 
 class ALSRecommender():
-    
+    """Initialize with an item_factors_df and inverted_alias_dict, then use method 
+    min_dissat_recs to get a rec"""
     def __init__(self, item_factors_df, inverted_alias_dict):
         self.item_factors_df = item_factors_df
         self.item_factors_array = np.array(self.item_factors_df['features'].tolist())
@@ -73,31 +74,32 @@ class ALSRecommender():
         return new_user_named_preds
 
     def compile_df(self, user1_df, user2_df):
-        """Return the 'preds database' that contains both user's predicted scores for every restaurant"""
-        return pd.concat([user1_df, user2_df], axis=0, sort=False)
+        """Return the 'preds_df' that contains both user's predicted scores for every restaurant"""
+        return pd.concat([user1_df, user2_df], axis=0, sort=False).round(1)
         
-    def sort_recs_for_two(self, user1, user2, preds_database):    
-        u1 = preds_database.loc[user1]
-        u2 = preds_database.loc[user2]
+    def sort_recs_for_two(self, user1, user2, preds_df): 
+        """Return the sorted datafram with restaurants containing the highest mean score between two users"""   
+        u1 = preds_df.loc[user1]
+        u2 = preds_df.loc[user2]
         double_df = pd.concat([u1, u2], axis=1, sort=False)
         double_df['mean'] = double_df.mean(axis=1)
         return double_df.sort_values(by=['mean'], ascending=False)
     
-    def get_a_rec(self, user1, user2, preds_database):
-        sorted_recs = self.sort_recs_for_two(user1, user2, preds_database).head(30)
+    def get_a_rec(self, user1, user2, preds_df):
+        sorted_recs = self.sort_recs_for_two(user1, user2, preds_df).head(30)
         normalized_weights = sorted_recs['mean'] / sorted_recs['mean'].sum()
         return sorted_recs.sample(1, weights=(sorted_recs['mean'] / normalized_weights))
 
-    def top_recs(self, user1, user2, preds_database):
-        return self.sort_recs_for_two(user1, user2, preds_database).head(3)
+    def top_recs(self, user1, user2, preds_df):
+        return self.sort_recs_for_two(user1, user2, preds_df).head(3)
 
-    def min_dissat(self, user1, user2, preds_database):
-        """I want to sort the restaurants by minimizing the dissatisfaction for both parties
-         - so like, which restaurant has the highest rating for BOTH parties"""
-        #  sorted_preds = sort_recs_for_two(user1, user2, preds_database)
-        #  for restaurant in sorted_preds:
-        #      return max(sorted_preds['user1'])
-        pass
+    def min_dissat_recs(self, user1, user2, preds_df, n=None):
+        """Input two usernames and output a sorted pandas dataframe with the restaurants that received the
+        highest average and, in the case of ties, the highest minimum ratings between the two users"""
+        preds_df['mean'] = preds_df.mean(axis=1).round(1)
+        preds_df['min'] = preds_df.min(axis=1)
+        preds_df_sorted = preds_df.sort_values(by=['mean','min'], ascending=False)
+        return preds_df_sorted[:n]
          
 
 
@@ -118,7 +120,7 @@ class ALSRecommender():
     #     item_idx = self.item_factors_df.index[if_df['id'] == item_id][0]
     #     return predict_rating(user_idx, item_idx)
 
-    # def compile_preds_database(self, all_surveys):
+    # def compile_preds_df(self, all_surveys):
     #     preds = []
     #     for k, v in all_surveys.items():
     #     preds.append(self.get_preds_from_single_survey_results(k, v))

@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from statistics import mean, stdev
 
 import pickle
 
@@ -16,82 +17,12 @@ class ALSRecommender():
         self.item_factors_df = item_factors_df
         self.item_factors_array = np.array(self.item_factors_df['features'].tolist())
         self.inverted_alias_dict = inverted_alias_dict
-        #self.preds_df = preds_df
-        #self.survey_results = survey_results
 
-    def get_restaurant_indexes(self, user_ratings_df, item_factors_df):
-        """Return an array of restaurant indexes that were reviewed by a particular user"""
-        rest_idxs = []
-        for item in user_ratings_df['item_id']:
-            rest_idx = self.item_factors_df.index[self.item_factors_df['id']==item]
-            rest_idxs.append(rest_idx[0])
-        return np.array(rest_idxs)
-
-    def new_user_predict(self, new_user_factors, item_factors_array, username):
-        """Return a new df with a single row containing the users predictions for every restaurant"""
-        new_factor_list =[]
-        for i in range(len(item_factors_array)):
-            new_factor_list.append(np.dot(new_user_factors, item_factors_array[i]))
-        new_user_preds = pd.DataFrame([new_factor_list], index=[username])
-        return new_user_preds
-
-    def change_rest_ids_to_aliases(self, new_user_preds, inverted_alias_dict):
-        """Use the inverted alias dictionary to rename columns by restaurant alias"""
-        new_user_preds = new_user_preds.rename(inverted_alias_dict, axis=1)
-        return new_user_preds
-
-    def standardize_survey_results(self, ratings_dict):
-        """Return the survey_results dictionary with the ratings on a scale of 1-5 (to make
-        it the same as Yelp's scale)"""
-        return {k: v / 2 for k, v in ratings_dict.items()} 
-
-
-    def get_user_ratings_df(self, ratings_dict):
-        """Return a df with columns 'item_id' and 'ratings' for an individual user's survey results"""
-        survey_standardized = self.standardize_survey_results(ratings_dict)
-        #make a new dictionary with keys=restaurant_id, values=user's rating
-        id_to_rating = {k: survey_standardized[v] for k, v in self.inverted_alias_dict.items() if v in survey_standardized}
-        user_ratings_df = pd.DataFrame.from_dict(id_to_rating, orient='index')
-        user_ratings_df.reset_index(inplace=True)
-        user_ratings_df.rename(columns={'index':'item_id', 0:'rating'}, inplace=True)
-        return user_ratings_df
-    
-    def get_user_factors_array(self, item_factors_array, restaurant_idxs, user_ratings_df):
-        latent_item_features = item_factors_array[restaurant_idxs]
-        ratings = user_ratings_df['rating'].values
-        user_factors_array, residuals, rank, s = np.linalg.lstsq(latent_item_features, ratings) 
-        return user_factors_array
-
-    def user_preds_from_survey(self, user_survey):
-        """Return a df of predictions user preferences for every restaurant, given the user's survey results"""
-        
-        user_ratings_df = self.get_user_ratings_df(user_survey['survey'])
-        rest_idxs = self.get_restaurant_indexes(user_ratings_df, self.item_factors_df)
-        user_factors_array = self.get_user_factors_array(self.item_factors_array, rest_idxs, user_ratings_df)
-
-        new_user_preds = self.new_user_predict(user_factors_array, self.item_factors_array, user_survey['user'])
-        new_user_named_preds = self.change_rest_ids_to_aliases(new_user_preds, self.inverted_alias_dict)
-        return new_user_named_preds
-
-    def compile_df(self, user1_df, user2_df):
-        """Return the 'preds_df' that contains both user's predicted scores for every restaurant"""
-        return pd.concat([user1_df, user2_df], axis=0, sort=False).round(1)
-        
-    def sort_recs_for_two(self, user1, user2, preds_df): 
-        """Return the sorted datafram with restaurants containing the highest mean score between two users"""   
-        u1 = preds_df.loc[user1]
-        u2 = preds_df.loc[user2]
-        double_df = pd.concat([u1, u2], axis=1, sort=False)
-        double_df['mean'] = double_df.mean(axis=1)
-        return double_df.sort_values(by=['mean'], ascending=False)
-    
-    def get_a_rec(self, user1, user2, preds_df):
-        sorted_recs = self.sort_recs_for_two(user1, user2, preds_df).head(30)
+    def single_rec(self, user1, user2, preds_df):
+        """Return a single, random, weighted recommendaton from the user's top 30 restaurants"""
+        sorted_recs = self.min_dissat_recs(user1, user2, preds_df, 30)
         normalized_weights = sorted_recs['mean'] / sorted_recs['mean'].sum()
         return sorted_recs.sample(1, weights=(sorted_recs['mean'] / normalized_weights))
-
-    def top_recs(self, user1, user2, preds_df):
-        return self.sort_recs_for_two(user1, user2, preds_df).head(3)
 
     def min_dissat_recs(self, user1, user2, preds_df, n=None):
         """Input two usernames and output a sorted pandas dataframe with the restaurants that received the
@@ -100,7 +31,71 @@ class ALSRecommender():
         preds_df['min'] = preds_df.min(axis=1)
         preds_df_sorted = preds_df.sort_values(by=['mean','min'], ascending=False)
         return preds_df_sorted[:n]
-         
+    
+    def get_combined_preds_df(self, user1_df, user2_df):
+        """Return the 'preds_df' that contains both user's predicted scores for every restaurant"""
+        preds_df = pd.concat([user1_df, user2_df], axis=0, sort=False).round(1)
+        return preds_df
+
+    def user_preds_from_survey(self, user_survey):
+        """Return a df of predictions of user preferences for every restaurant, given the user's survey results"""
+        raw_user_ratings_df = self.get_raw_ratings_df(user_survey['survey'])
+        rest_idxs = self.get_restaurant_indexes(raw_user_ratings_df, self.item_factors_df)
+        user_factors_array = self.get_user_factors_array(self.item_factors_array, rest_idxs, raw_user_ratings_df)
+
+        ids_user_df = self.new_user_predict(user_factors_array, self.item_factors_array, user_survey['user'])
+        user_df = self.ids_to_aliases(ids_user_df, self.inverted_alias_dict)
+        return user_df
+    
+    def normalize(self, user_df):
+        user_df = (user_df - min(user_df)) / (max(user_df) - min(user_df))
+
+    def get_restaurant_indexes(self, raw_user_ratings_df, item_factors_df):
+        """Return an array of restaurant indexes that were reviewed by a particular user"""
+        rest_idxs = []
+        for item in raw_user_ratings_df['item_id']:
+            rest_idx = self.item_factors_df.index[self.item_factors_df['id']==item]
+            rest_idxs.append(rest_idx[0])
+        return np.array(rest_idxs)
+
+    def get_raw_ratings_df(self, user_survey):
+        """Return a df with columns 'item_id' and 'ratings' for an individual user's survey results"""
+        survey_standardized = self.standardize(user_survey)
+        #make a new dictionary with keys=restaurant_id, values=user's rating
+        standardized_dict = {k: survey_standardized[v] for k, v in self.inverted_alias_dict.items() if v in survey_standardized}
+        raw_user_ratings_df = pd.DataFrame.from_dict(standardized_dict, orient='index')
+        raw_user_ratings_df.reset_index(inplace=True)
+        raw_user_ratings_df.rename(columns={'index':'item_id', 0:'rating'}, inplace=True)
+        return raw_user_ratings_df
+
+    def standardize(self, survey):
+        """Standardize survey results"""
+        ave = mean(survey.values())
+        sd = stdev(survey.values())
+        return {k: (v-ave)/sd for k, v in survey.items()}
+
+    def get_user_factors_array(self, item_factors_array, restaurant_idxs, raw_user_ratings_df):
+        """Return a user_factors_array to be used by new_user_predict()"""
+        latent_item_features = item_factors_array[restaurant_idxs]
+        ratings = raw_user_ratings_df['rating'].values
+        user_factors_array, residuals, rank, s = np.linalg.lstsq(latent_item_features, ratings) 
+        return user_factors_array
+
+    def new_user_predict(self, user_factors_array, item_factors_array, username):
+        """Return a new df with a single row containing the users predictions for every restaurant"""
+        new_factor_list =[]
+        for i in range(len(item_factors_array)):
+            new_factor_list.append(np.dot(user_factors_array, item_factors_array[i]))
+        new_user_preds = pd.DataFrame([new_factor_list], index=[username])
+        return new_user_preds
+    
+    def ids_to_aliases(self, user_df, inverted_alias_dict):
+        """Use the inverted alias dictionary to rename columns by restaurant alias"""
+        named_user_df = user_df.rename(inverted_alias_dict, axis=1)
+        return named_user_df
+        
+
+
 
 
 #Things that I probably don't need:
@@ -125,3 +120,17 @@ class ALSRecommender():
     #     for k, v in all_surveys.items():
     #     preds.append(self.get_preds_from_single_survey_results(k, v))
     #     return pd.concat(preds, axis=0, sort=False)
+
+    # def sort_recs_for_two(self, user1, user2, preds_df): 
+    #     """Return the sorted datafram with restaurants containing the highest mean score between two users"""   
+    #     u1 = preds_df.loc[user1]
+    #     u2 = preds_df.loc[user2]
+    #     double_df = pd.concat([u1, u2], axis=1, sort=False)
+    #     double_df['mean'] = double_df.mean(axis=1)
+    #     return double_df.sort_values(by=['mean'], ascending=False)
+
+
+
+
+
+

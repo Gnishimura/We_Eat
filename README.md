@@ -11,6 +11,16 @@ How much time have you wasted trying to figure out where to eat with your partne
 
 Enough with that. WeEat learns your tastes, sets up a restaurant profile you, and offers tailored recommendations that will leave everyone happy!
 
+Table of Contents
+=================
+   * [How It Works](#how-it-works)
+   * [Data](#data)
+   * [Methods](#methods)
+   * [Evaluation](#evaluation)
+   * [Next Steps](#next-steps)
+   * [Tools and Packages Used](#tools-and-packages-used)
+
+
 ---
 ### How it works
 When you take the survey, WeEat applies your results to its collaborative filtering model and produces your predicted ratings for every restaurant in the database. 

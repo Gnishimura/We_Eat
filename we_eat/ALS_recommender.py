@@ -45,10 +45,11 @@ class ALSRecommender():
 
         ids_user_df = self.new_user_predict(user_factors_array, self.item_factors_array, user_survey['user'])
         user_df = self.ids_to_aliases(ids_user_df, self.inverted_alias_dict)
-        return user_df
+        normed_user_df = self.normalize(user_df)
+        return normed_user_df
     
     def normalize(self, user_df):
-        user_df = (user_df - min(user_df)) / (max(user_df) - min(user_df))
+        return (user_df - float(user_df.min(axis=1))) / (float(user_df.max(axis=1) - user_df.min(axis=1))) * 5
 
     def get_restaurant_indexes(self, raw_user_ratings_df, item_factors_df):
         """Return an array of restaurant indexes that were reviewed by a particular user"""
@@ -60,19 +61,13 @@ class ALSRecommender():
 
     def get_raw_ratings_df(self, user_survey):
         """Return a df with columns 'item_id' and 'ratings' for an individual user's survey results"""
-        survey_standardized = self.standardize(user_survey)
+        #survey_standardized = self.standardize(user_survey)
         #make a new dictionary with keys=restaurant_id, values=user's rating
-        standardized_dict = {k: survey_standardized[v] for k, v in self.inverted_alias_dict.items() if v in survey_standardized}
+        standardized_dict = {k: user_survey[v] for k, v in self.inverted_alias_dict.items() if v in user_survey}
         raw_user_ratings_df = pd.DataFrame.from_dict(standardized_dict, orient='index')
         raw_user_ratings_df.reset_index(inplace=True)
         raw_user_ratings_df.rename(columns={'index':'item_id', 0:'rating'}, inplace=True)
         return raw_user_ratings_df
-
-    def standardize(self, survey):
-        """Standardize survey results"""
-        ave = mean(survey.values())
-        sd = stdev(survey.values())
-        return {k: (v-ave)/sd for k, v in survey.items()}
 
     def get_user_factors_array(self, item_factors_array, restaurant_idxs, raw_user_ratings_df):
         """Return a user_factors_array to be used by new_user_predict()"""
@@ -129,6 +124,12 @@ class ALSRecommender():
     #     double_df['mean'] = double_df.mean(axis=1)
     #     return double_df.sort_values(by=['mean'], ascending=False)
 
+
+    # def standardize(self, survey):
+    #     """Standardize survey results"""
+    #     ave = mean(survey.values())
+    #     sd = stdev(survey.values())
+    #     return {k: (v-ave)/sd for k, v in survey.items()}
 
 
 
